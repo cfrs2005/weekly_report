@@ -73,27 +73,15 @@
 								<label class="col-sm-4 control-label">周报时间:</label>
 
 								<div class="col-sm-3">
-									<select class="form-control">
-										<option value="2015-08-09 / 2012/123/33">上上周(2015-08-09 /
-											2015-08-15)</option>
-										<option value="2015-08-09 / 2012/123/33">上周(2015-08-09 /
-											2015-08-15)</option>
-										<option value="2015-08-09 / 2012/123/33">本周(2015-08-09 /
-											2015-08-15)</option>
-										<option value="2015-08-09 / 2012/123/33">下周(2015-08-09 /
-											2015-08-15)</option>
-										<option value="2015-08-09 / 2012/123/33">下下周(2015-08-09 /
-											2015-08-15)</option>
-									</select>
-								</div>
-							</div>
-							<div class="form-group">
-
-								<label class="col-sm-4 control-label">周报状态:</label>
-								<div class="col-sm-3">
-									<select class="form-control">
-										<option>发送</option>
-										<option>草稿</option>
+									<select class="form-control" ng-model="formData.weeklynum">
+										<?php
+										$weeks = Contaier::last_five_week_time ();
+										foreach ( $weeks as $week ) {
+											?>
+											<option value="<?php echo $week['weeklynum']?>"><?php echo "第".$week['weeklynum']."周(".$week['monday']." / ".$week['sunday'].")";?></option>
+											<?php
+										}
+										?>
 									</select>
 								</div>
 							</div>
@@ -101,7 +89,8 @@
 								<label class="col-sm-4 control-label">周报内容:</label>
 								<div class="col-sm-8">
 
-									<textarea class="form-control" rows="10" placeholder="周报内容"></textarea>
+									<textarea class="form-control" rows="10" placeholder="周报内容"
+										ng-model="formData.content"></textarea>
 								</div>
 
 							</div>
@@ -111,9 +100,9 @@
 							<div class="form-group">
 								<label class="col-sm-4 control-label"></label>
 								<div class="col-sm-4">
-									<button type="submit" class="btn btn-primary" ng-click="save()">提交</button>
-									<button type="button" class="btn btn-danger"
-										ng-click="savedraft()">保存草稿</button>
+									<button type="submit" class="btn btn-primary"
+										ng-click="save(0)">提交</button>
+									<button type="button" class="btn btn-danger" ng-click="save(1)">保存草稿</button>
 								</div>
 
 							</div>

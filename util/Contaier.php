@@ -26,15 +26,15 @@ class Contaier {
 	
 	/**
 	 * 获取最近的五周
-	 * 
+	 *
 	 * @return Ambigous <multitype:string, multitype:string >
 	 */
 	public static function last_five_week_time() {
-		$week_array [] = $this->_get_week_info ( 2, false );
-		$week_array [] = $this->_get_week_info ( 1, false );
-		$week_array [] = $this->_get_week_info ( 0, true );
-		$week_array [] = $this->_get_week_info ( 1, true );
-		$week_array [] = $this->_get_week_info ( 2, true );
+		$week_array [] = self::_get_week_info ( 2, false );
+		$week_array [] = self::_get_week_info ( 1, false );
+		$week_array [] = self::_get_week_info ( 0, true );
+		$week_array [] = self::_get_week_info ( 1, true );
+		$week_array [] = self::_get_week_info ( 2, true );
 		return $week_array;
 	}
 	
@@ -69,13 +69,14 @@ class Contaier {
 	 *        	true为往后叠加 false 为往前推算
 	 * @return multitype:string
 	 */
-	private function _get_week_info($week_num, $flag = true) {
+	public static function _get_week_info($week_num, $flag = true) {
 		$time_arr = array ();
+		
 		if (! $flag) {
-			$num = (- 1) * $week_num;
+			$week_num = (- 1) * $week_num;
 		}
-		$monday_time = strtotime ( "this Monday" ) + 604800 * $num;
-		$sunday_time = strtotime ( "this Sunday" ) + 604800 * $num;
+		$monday_time = strtotime ( "last Monday" ) + 604800 * $week_num;
+		$sunday_time = strtotime ( "this Sunday" ) + 604800 * $week_num;
 		
 		$time_arr ['monday'] = date ( 'Y-m-d', $monday_time );
 		$time_arr ['sunday'] = date ( 'Y-m-d', $sunday_time );

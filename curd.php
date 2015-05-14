@@ -88,8 +88,36 @@ class info_curd {
 		$this->_info_model->_add_member ( $member_info );
 	}
 	// 表单保存用户提交的周报数据
-	public function addwork() {
+	public function addworkly() {
+		$weeklynum = ! empty ( $_POST ['weeklynum'] ) ? $_POST ['weeklynum'] : '';
+		$content = ! empty ( $_POST ['content'] ) ? $_POST ['content'] : '';
+		$status = ! empty ( $_GET ['savestatus'] ) ? intval ( $_GET ['savestatus'] ) : 0;
+		$uid = $_SESSION ['uid'];
+		if (! empty ( $weeklynum ) && ! empty ( $content ) && ! empty ( $uid )) {
+			$result = $this->_info_model->_add_weekly ( $uid, $weeklynum, $content, $status );
+			if (! $result) {
+				$this->_change_msg ( 3 );
+			}
+		} else {
+			$this->_change_msg ( 4 );
+		}
+		
+		echo $this->_response_type ();
 	}
+	/**
+	 * 获取当前用户所有周报
+	 */
+	public function getmemberweekly() {
+		$uid = $_SESSION ['uid'];
+		if (empty ( $uid )) {
+			$this->_change_msg ( 4 );
+		} else {
+			$weekly_list = $this->_info_model->_get_user_weekly ( $uid );
+			$this->_callback_data ['data'] = $weekly_list;
+		}
+		echo $this->_response_type ();
+	}
+	
 	// 表单获取所有用户
 	public function getmembers() {
 		return $this->_info_model->_get_members ();

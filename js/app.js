@@ -44,6 +44,35 @@ scutechApp.controller('ListCtrl', function($scope, $http) {
 		});
 	}
 
+	$scope.save = function(savetype) {
+		$http({
+			method : 'POST',
+			url : './curd.php?action=addworkly&savetype=' + savetype,
+			data : $.param($scope.formData),
+			headers : {
+				'Content-Type' : 'application/x-www-form-urlencoded'
+			}
+		}).success(function(result) {
+			if (result.code == 0) {
+				alert('保存成功');
+			} else {
+				alert(result.msg);
+			}
+			console.log(result);
+		});
+	}
+
+	$scope.getallweekly = function() {
+		$http.get('./curd.php?action=getmemberweekly').success(
+				function(data, status, headers, config) {
+					if (data.code == 0) {
+						alert('读取数据成功');
+						$scope.weeklylist = data.data;
+					}
+				}).error(function(data, status, headers, config) {
+		});
+	}
+	$scope.getallweekly();
 	$scope.forgetpass = function() {
 		alert('i am forget my password.this case i forgetton do it');
 	}

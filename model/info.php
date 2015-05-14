@@ -19,6 +19,9 @@ class info_model {
 	const USER_ID_FLAG = 'userid';
 	const USER_ID_LIST = 'userid_list';
 	const USER_NAME = 'username';
+	const WEEKLY_ID_LIST = 'weeklyid_list';
+	const USER_WEEKLY_LIST = 'user_weekly_list';
+	const USER_WEEKLY_KEY = 'user_weekly:';
 	protected function __construct() {
 		$this->__init_info ();
 		$redis_info = Contaier::get_config ( 'redis' );
@@ -56,8 +59,58 @@ class info_model {
 		return $users;
 	}
 	/**
+	 * 存入用户周报
+	 *
+	 * @param unknown $uid
+	 *        	用户id
+	 * @param unknown $weekly
+	 *        	周数
+	 * @param unknown $content
+	 *        	正文内容
+	 * @param string $status
+	 *        	0 发布 1 草稿
+	 */
+	public function _add_weekly($uid, $weekly, $content, $status = '0') {
+		$content_arr = array (
+				'content' => $content,
+				'status' => $status 
+		);
+		$this->_redis_client->hmset ( self::USER_WEEKLY_KEY . $uid . ":" . $weekly, $content_arr );
+		$this->_redis_client->rpush ( self::USER_WEEKLY_LIST, $weekly );
+		return $this->_redis_client->rpush ( self::USER_WEEKLY_LIST . $uid, $weekly );
+	}
+	/**
+	 * 获取用户所有周报
+	 *
+	 * @param unknown $uid        	
+	 * @return multitype:unknown NULL
+	 */
+	public function _get_user_weekly($uid) {
+		$week_ids = $this->_redis_client->lrange ( self::USER_WEEKLY_LIST . $uid, 0, - 1 );
+		if (is_array ( $week_ids ) && count ( $week_ids ) > 0) {
+			foreach ( $week_ids as $key => $value )
+				$weekly_list [] = array (
+						'uid' => $uid,
+						'weekly' => $value,
+						'content' => $this->_get_weekly_info ( $uid, $value ) 
+				);
+		}
+		return $weekly_list;
+	}
+	
+	/**
+	 * 获取周报详情
+	 *
+	 * @param unknown $uid        	
+	 * @param unknown $weekly        	
+	 */
+	public function _get_weekly_info($uid, $weekly) {
+		return $this->_redis_client->hgetall ( self::USER_WEEKLY_KEY . $uid . ":" . $weekly );
+	}
+	
+	/**
 	 * 获取用户id
-	 * 
+	 *
 	 * @param unknown $username        	
 	 */
 	public function _get_userid_by_name($username) {
