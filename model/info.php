@@ -75,10 +75,28 @@ class info_model {
 				'content' => $content,
 				'status' => $status 
 		);
-		$this->_redis_client->hmset ( self::USER_WEEKLY_KEY . $uid . ":" . $weekly, $content_arr );
-		$this->_redis_client->rpush ( self::USER_WEEKLY_LIST, $weekly );
-		return $this->_redis_client->rpush ( self::USER_WEEKLY_LIST . $uid, $weekly );
+		$result = $this->_get_weekly_info ( $uid, $weekly );
+		if ($result) {
+			// 这里也很费解,更新内容影响行数就是0
+			$this->_redis_client->hset ( self::USER_WEEKLY_KEY . $uid . ":" . $weekly, 'content', $content );
+			$this->_redis_client->hset ( self::USER_WEEKLY_KEY . $uid . ":" . $weekly, 'status', $status );
+			return TRUE;
+		} else {
+			$this->_redis_client->hmset ( self::USER_WEEKLY_KEY . $uid . ":" . $weekly, $content_arr );
+			return $this->_redis_client->rpush ( self::USER_WEEKLY_LIST . $uid, $weekly );
+		}
 	}
+	/**
+	 * 删除某个周报
+	 *
+	 * @param unknown $uid        	
+	 * @param unknown $weekly        	
+	 */
+	public function _del_weekly($uid, $weekly) {
+		$this->_redis_client->lrem ( self::USER_WEEKLY_LIST . $uid, '1', $weekly );
+		return $this->_redis_client->del ( self::USER_WEEKLY_KEY . $uid . ":" . $weekly );
+	}
+	
 	/**
 	 * 获取用户所有周报
 	 *
@@ -91,7 +109,7 @@ class info_model {
 			foreach ( $week_ids as $key => $value )
 				$weekly_list [] = array (
 						'uid' => $uid,
-						'weekly' => $value,
+						'week' => $value,
 						'content' => $this->_get_weekly_info ( $uid, $value ) 
 				);
 		}

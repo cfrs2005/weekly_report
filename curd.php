@@ -88,10 +88,15 @@ class info_curd {
 		$this->_info_model->_add_member ( $member_info );
 	}
 	// 表单保存用户提交的周报数据
-	public function addworkly() {
-		$weeklynum = ! empty ( $_POST ['weeklynum'] ) ? $_POST ['weeklynum'] : '';
+	public function saveworkly() {
+		// angunlar未解决的问题 ng-option 模型中返回的序列值不会自动变化
+		if (is_array ( $_POST ['weeklynum'] )) {
+			$weeklynum = ! empty ( $_POST ['weeklynum'] ['id'] ) ? $_POST ['weeklynum'] ['id'] : '';
+		} else {
+			$weeklynum = ! empty ( $_POST ['weeklynum'] ) ? intval ( $_POST ['weeklynum'] ) : '';
+		}
 		$content = ! empty ( $_POST ['content'] ) ? $_POST ['content'] : '';
-		$status = ! empty ( $_GET ['savestatus'] ) ? intval ( $_GET ['savestatus'] ) : 0;
+		$status = ! empty ( $_GET ['savetype'] ) ? intval ( $_GET ['savetype'] ) : 0;
 		$uid = $_SESSION ['uid'];
 		if (! empty ( $weeklynum ) && ! empty ( $content ) && ! empty ( $uid )) {
 			$result = $this->_info_model->_add_weekly ( $uid, $weeklynum, $content, $status );
@@ -113,7 +118,63 @@ class info_curd {
 			$this->_change_msg ( 4 );
 		} else {
 			$weekly_list = $this->_info_model->_get_user_weekly ( $uid );
-			$this->_callback_data ['data'] = $weekly_list;
+			if (! empty ( $weekly_list )) {
+				foreach ( $weekly_list as &$week ) {
+					if (empty ( $week ['week'] )) {
+						continue;
+					}
+					$week ['week_str'] = "第" . $week ['week'] . "周(" . Contaier::week_num_to_days ( $week ['week'] ) . ")";
+					$week ['status'] = ! empty ( $week ['content'] ['status'] ) ? "草稿" : "已发送";
+				}
+				$this->_callback_data ['data'] = $weekly_list;
+			}
+		}
+		echo $this->_response_type ();
+	}
+	/**
+	 * 后去最近日期周数
+	 */
+	public function getdailys() {
+		$weeks = Contaier::last_five_week_time ();
+		foreach ( $weeks as &$week ) {
+			$week ['id'] = $week ['weeklynum'];
+			$week ['week_str'] = "第" . $week ['weeklynum'] . "周(" . $week ['monday'] . " / " . $week ['sunday'] . ")";
+		}
+		$this->_callback_data ['data'] = $weeks;
+		echo $this->_response_type ();
+	}
+	
+	/**
+	 * 获取周报详情
+	 */
+	public function getweeklydetail() {
+		$weekly = $_GET ['weekly'];
+		$uid = $_SESSION ['uid'];
+		$result = $this->_info_model->_get_weekly_info ( $uid, $weekly );
+		if (! $result) {
+			$this->_change_msg ( 3 );
+		} else {
+			$this->_callback_data ['data'] = $result;
+		}
+		echo $this->_response_type ();
+	}
+	/**
+	 * 用户登出
+	 */
+	public function loginout() {
+		$_SESSION ['username'] = '';
+		$_SESSION ['uid'] = '';
+		header ( "Location:./" );
+	}
+	/**
+	 * 删除用户某个周报
+	 */
+	public function dropweekly() {
+		$weekly = $_GET ['weekly'];
+		$uid = $_SESSION ['uid'];
+		$result = $this->_info_model->_del_weekly ( $uid, $weekly );
+		if (! $result) {
+			$this->_change_msg ( 3 );
 		}
 		echo $this->_response_type ();
 	}

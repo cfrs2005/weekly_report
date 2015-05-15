@@ -1,4 +1,15 @@
-<?php require_once 'config/config.php';?>
+<?php
+require_once 'config/config.php';
+// $_SESSION ['username'] = '';
+// $_SESSION ['uid'] = '';
+
+if (empty ( $_SESSION ['username'] ) || empty ( $_SESSION ['uid'] )) {
+	echo "尚未登录";
+	header ( "Location:./" );
+	exit ();
+}
+
+?>
 <!doctype html>
 <html lang="en">
 <head>
@@ -7,7 +18,10 @@
 <link rel="stylesheet" href="lib/bootstrap/css/bootstrap.css">
 <script src="http://cdn.bootcss.com/jquery/1.11.2/jquery.min.js"></script>
 
-<script src="lib/angular/angular.js"></script>
+<!-- <script src="lib/angular/angular.js"></script> -->
+<script
+	src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.0-rc.2/angular.min.js"></script>
+
 <script src="js/app.js"></script>
 
 </head>
@@ -45,8 +59,8 @@
 			</div>
 
 			<div class="panel-body">
-				<button class="btn btn-primary">添加周报</button>
-				<br /> <br />
+				<!-- 				<button class="btn btn-primary">添加周报</button> -->
+				<!-- 				<br /> <br /> -->
 
 				<table class="table table-bordered table-hover">
 					<thead>
@@ -57,10 +71,13 @@
 						</tr>
 					</thead>
 					<tbody>
-						<tr ng-repeat="product in products">
-							<td>{{ product.week }}</td>
-							<td>{{ product.status }}</td>
-							<td><a href="#">修改</a> / <a href="#">删除</a> / <a href="#">发送</a></td>
+						<tr ng-repeat="weekly in weeklylist">
+							<td>{{ weekly.week_str }}</td>
+							<td>{{ weekly.status }}</td>
+							<td><a href="#" data-id='{{ weekly.week }}'
+								ng-click="detail($event)">修改</a> / <a href="#"
+								data-id='{{ weekly.week }}' ng-click="del($event)">删除</a> / <a
+								href="#">发送</a></td>
 						</tr>
 					</tbody>
 				</table>
@@ -73,15 +90,10 @@
 								<label class="col-sm-4 control-label">周报时间:</label>
 
 								<div class="col-sm-3">
-									<select class="form-control" ng-model="formData.weeklynum">
-										<?php
-										$weeks = Contaier::last_five_week_time ();
-										foreach ( $weeks as $week ) {
-											?>
-											<option value="<?php echo $week['weeklynum']?>"><?php echo "第".$week['weeklynum']."周(".$week['monday']." / ".$week['sunday'].")";?></option>
-											<?php
-										}
-										?>
+									<select id="weekly_id" class="form-control"
+										ng-model="formData.weeklynum"
+										ng-options="s.id as s.week_str for s in weeklist track by s.id">
+										<option value="">-- 请选择周报时间 --</option>
 									</select>
 								</div>
 							</div>
@@ -100,6 +112,7 @@
 							<div class="form-group">
 								<label class="col-sm-4 control-label"></label>
 								<div class="col-sm-4">
+
 									<button type="submit" class="btn btn-primary"
 										ng-click="save(0)">提交</button>
 									<button type="button" class="btn btn-danger" ng-click="save(1)">保存草稿</button>
