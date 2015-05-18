@@ -78,7 +78,7 @@ class info_curd {
 		// test
 		$username = "安静";
 		$mid = 0;
-		$password = '123';
+		$password = '1234';
 		$member_info = array (
 				'uid' => $uid,
 				'username' => $username,
